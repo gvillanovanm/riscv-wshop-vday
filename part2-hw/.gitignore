@@ -1,0 +1,4 @@
+__pycache__
+lab1-ula/*.v
+lab1-ula/*.vcd
+build/
