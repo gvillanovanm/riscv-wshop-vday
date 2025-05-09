@@ -1,9 +1,9 @@
 # Setup
-IMAGE          = gvillanovanm/dkof-riscv-wshop-vday
-CONTAINER_NAME = dkof-riscv-wshop-vday
+IMAGE          = gvillanovanm/dk-riscv-wshop-vday
+CONTAINER_NAME = dk-riscv-wshop-vday
 HOST_PATH      = $(PWD)
 CONTAINER_PATH = /workspace
-HOSTNAME       = dkof-riscv-wshop-vday
+HOSTNAME       = dk-riscv-wshop-vday
 
 # Docker cmds
 dk_run:
