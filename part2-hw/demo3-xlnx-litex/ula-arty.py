@@ -6,6 +6,7 @@ from litex_boards.platforms import digilent_arty
 # Clock/Reset Generator
 class _CRG(LiteXModule):
     def __init__(self, platform):
+
         # Declare clock domains "a" and "b":
         self.cd_a = ClockDomain("a")
         self.cd_b = ClockDomain("b")
@@ -18,13 +19,18 @@ class _CRG(LiteXModule):
         self.comb += self.cd_a.clk.eq(btn_0)
         self.comb += self.cd_b.clk.eq(btn_1)
 
-class ula(LiteXModule):
+class ULA(LiteXModule):
     def __init__(self, platform):
-        self.crg = _CRG(platform) # Add CRG
+        # Add CRG
+        self.crg = _CRG(platform)
 
-        # to be implemented: request necessary IOs
+        # Request leds and swithces from (Arty) platform:
+        sw  = []
+        led = []
+        for _ in range(4):
+            sw.append(platform.request("user_sw",_))
+            led.append(platform.request("user_led",_))
 
-        # BEGIN of LOGIC -----------------------------------
         # Intern signals:
         data   = Signal(2)
         opcode = Signal(2)
@@ -45,20 +51,25 @@ class ula(LiteXModule):
         cases_dict[3] = result.eq(reg_a >> reg_b)
 
         self.comb += Case(opcode, cases_dict)
-        # END of LOGIC -------------------------------------
 
-        # to be implemented: connect ula and FPGA IOs...
+        # Connect ULA I/Os to platform I/Os:
+        self.comb += [data.eq(Cat(sw[0], sw[1])),
+                      opcode.eq(Cat(sw[2], sw[3])),
+                      Cat(led[0], led[1], led[2], led[3]).eq(result)]
 
 def main(args):
     platform = digilent_arty.Platform()
     platform.add_platform_command("set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets user_btn0_IBUF]")
-    dut = ula(platform)
+
+    dut = ULA(platform)
     platform.build(dut, build_dir="build", build_name=args.build_name, run=args.run_synth)
 
 if __name__ == "__main__":
+    
     # Get arguments:
     parser = argparse.ArgumentParser(description="LiteX Verilog generator")
     parser.add_argument("--build_name","-n", type=str, default="ula", help="Build name")
     parser.add_argument("--run_synth", "-r", action="store_true", help="Run FPGA synthesis")
     args = parser.parse_args()
+
     main(args)
